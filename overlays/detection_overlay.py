@@ -39,15 +39,27 @@ class DetectionOverlay:
     """
     bboxes = []
     if self.args.bbox_name_key in feature:
-      for ibbox, label in enumerate (feature[self.args.bbox_name_key].bytes_list.value):
-        bboxes.append( (label.decode("utf-8"),
+      label_indices  = feature["image/object/class/label"].int64_list.value
+      for ibbox, label in enumerate(feature[self.args.bbox_name_key].bytes_list.value):
+        label_idx = label_indices[ibbox]
+        bboxes.append( (label.decode("utf-8") + " " + str(label_idx),
                         feature[self.args.bbox_xmin_key].float_list.value[ibbox],
                         feature[self.args.bbox_xmax_key].float_list.value[ibbox],
                         feature[self.args.bbox_ymin_key].float_list.value[ibbox],
                         feature[self.args.bbox_ymax_key].float_list.value[ibbox]
       ) )
     else:
-      print("Bounding box key '%s' not present." % (self.args.bbox_name_key))
+      # print("Bounding box key '%s' not present." % (self.args.bbox_name_key))
+      # print(feature["image/object/class/label"])
+      for ibbox, label in enumerate (feature["image/object/class/label"].int64_list.value):
+        # print("added", label)
+        bboxes.append( (str(label),
+                        feature[self.args.bbox_xmin_key].float_list.value[ibbox],
+                        feature[self.args.bbox_xmax_key].float_list.value[ibbox],
+                        feature[self.args.bbox_ymin_key].float_list.value[ibbox],
+                        feature[self.args.bbox_ymax_key].float_list.value[ibbox]
+      ) )
+
     return bboxes
 
   def bbox_color(self, label):

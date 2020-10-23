@@ -3,7 +3,7 @@ import sys
 import io
 import argparse
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from flask import Flask, render_template, send_file
 
 from overlays import overlay_factory
@@ -88,9 +88,19 @@ def preload_images(max_images):
       example = tf.train.Example()
       example.ParseFromString(record)
       feat = example.features.feature
+      for a in feat:
+          # print(a)
+          if "xmin" in a:
+              #  print(feat[a])
+              pass
+
+      # raise ValueError("ok")
 
       if len(images) < max_images:
-        filename = feat[args.filename_key].bytes_list.value[0].decode("utf-8")
+        try:
+            filename = feat[args.filename_key].bytes_list.value[0].decode("utf-8")
+        except IndexError:
+            filename = "{:06d}".format(i)
         img =  feat[args.image_key].bytes_list.value[0]
         
         img_with_overlay = overlay.apply_overlay(img, feat)
